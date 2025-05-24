@@ -35,7 +35,8 @@ def load_HWA_data():
             velocity = polynomial(data[:, 1]) # First column is the velocity
 
             Mean = np.mean(velocity)
-            Rms = np.std(velocity)
+            # Rms = np.std(velocity) #this is only true when mean is zero.
+            Rms=np.sqrt(np.mean(velocity**2))
 
             if AoA == 0:
                 y_locations[0].append(y_location)
