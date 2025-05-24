@@ -24,10 +24,10 @@ xlabel('y location (m)');
 
 
 figure;
-loglog(AoA0.f, AoA0.pxx, 'DisplayName', 'AoA 0°', 'LineWidth',1.5);
+loglog(AoA0.f, AoA0.pxx, 'DisplayName', 'AoA 0°');
 hold on;
-loglog(AoA5.f, AoA5.pxx, 'DisplayName', 'AoA 5°', 'LineWidth',1.5);
-loglog(AoA15.f, AoA15.pxx, 'DisplayName', 'AoA 15°', 'LineWidth',1.5);
+loglog(AoA5.f, AoA5.pxx, 'DisplayName', 'AoA 5°');
+loglog(AoA15.f, AoA15.pxx, 'DisplayName', 'AoA 15°');
 xlabel('Frequency (Hz)');
 ylabel('Power Spectral Density (m^2/s^2/Hz)');
 legend('Location', 'best');
@@ -98,7 +98,8 @@ function [AoA0, AoA5, AoA15] = load_HWA()
                 y_locations_AoA15(end+1) = y_location;
                 Vmean_AoA15(end+1) = Mean;
                 Vrms_AoA15(end+1) = Rms;
-                if y_location == -24
+
+                if y_location == -32
                     [pxxAoA15, fAoA15] = pwelch(velocity, [], [], [], 1/(data(2,1)-data(1,1)));
                 end
             end
@@ -125,8 +126,8 @@ function [AoA0, AoA5, AoA15] = load_HWA()
     AoA0.y_locations = y_locations_AoA0;
     AoA0.Vmean = Vmean_AoA0;
     AoA0.Vrms = Vrms_AoA0;
-    AoA0.pxx = pxxAoA0;
-    AoA0.f = fAoA0;
+    AoA.pxx = pxxAoA0;
+    AoA.f = fAoA0;
 
     AoA5.y_locations = y_locations_AoA5;
     AoA5.Vmean = Vmean_AoA5;
