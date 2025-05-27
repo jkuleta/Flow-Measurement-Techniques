@@ -1,4 +1,10 @@
+clear; close all; clc;
 [AoA5, AoA15] = load_Pressure();
+
+
+% Extract velocity magnitude at an x location of interest
+indices_AoA5 = find(AoA5.x_locations == 102);
+indices_AoA15 = find(AoA15.x_locations == 102);
 
 
 % Define grid for interpolation for AoA15
@@ -20,7 +26,7 @@ title('Smoothed Velocity Magnitude Heat Map (AoA15)');
 axis equal tight;
 
 % Store color limits for consistency
-clims = caxis;
+%clims = caxis;
 
 % Define grid for interpolation for AoA5
 xq = linspace(min(AoA5.x_locations), max(AoA5.x_locations), 200);
@@ -35,12 +41,21 @@ figure;
 contourf(Xq, Yq, Vq_AoA5, 50, 'LineColor', 'none');  % 50 contour levels
 colormap('turbo'); % Use the same colormap as the first figure
 colorbar;
-caxis(clims);      % Use the same color scale as the first figure
+caxis;%(clims);      % Use the same color scale as the first figure
 xlabel('x');
 ylabel('y');
 title('Smoothed Velocity Magnitude Heat Map (AoA5)');
 axis equal tight;
 
+
+figure;
+plot(AoA5.y_locations_mean, AoA5.V_mean, 'x-', 'DisplayName', 'AoA 5°', 'LineWidth', 1.5);
+hold on;
+plot(AoA15.y_locations_mean, AoA15.V_mean, 'x-', 'DisplayName', 'AoA 15°', 'LineWidth', 1.5);
+xlabel('y location (m)');
+ylabel('Mean Velocity (m/s)');
+legend('Location', 'best');
+grid on;
 
 function [AoA5, AoA15] = load_Pressure()
     folder_path = 'Group17_Pressure';
@@ -73,5 +88,15 @@ function [AoA5, AoA15] = load_Pressure()
             AoA15.y_locations = y_locations;
         end
     end
+    % Extract velocity magnitude at an x location of interest
+    x_loc_mean = 120;
+    indices_AoA5 = find(abs(AoA5.x_locations - x_loc_mean)< 10);
+    indices_AoA15 = find(abs(AoA15.x_locations - x_loc_mean)< 10);
+
+    AoA5.y_locations_mean = AoA5.y_locations(indices_AoA5);
+    AoA5.V_mean = AoA5.V(indices_AoA5);
+
+    AoA15.y_locations_mean = AoA15.y_locations(indices_AoA15);
+    AoA15.V_mean = AoA15.V(indices_AoA15);
     disp('Completed!');
 end

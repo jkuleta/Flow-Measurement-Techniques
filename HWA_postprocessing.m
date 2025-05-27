@@ -1,3 +1,5 @@
+clear; close all; clc;
+
 [AoA0, AoA5, AoA15] = load_HWA();
 
 figure;
@@ -22,16 +24,40 @@ ylabel('RMS Velocity (m/s)');
 xlabel('y location (m)');
 
 
-
 figure;
-loglog(AoA0.f, AoA0.pxx, 'DisplayName', 'AoA 0°');
+x_piv = 8;
+
+% Plot once to get y-limits for shading, store plot handles for legend colors
+h1 = loglog(AoA0.f, AoA0.pxx, '-', 'LineWidth', 1.5); 
 hold on;
-loglog(AoA5.f, AoA5.pxx, 'DisplayName', 'AoA 5°');
-loglog(AoA15.f, AoA15.pxx, 'DisplayName', 'AoA 15°');
+h2 = loglog(AoA5.f, AoA5.pxx, '-', 'LineWidth', 1.5);  
+h3 = loglog(AoA15.f, AoA15.pxx, '-', 'LineWidth', 1.5); 
+
+xlim([0 10000]); % Set x-axis limits
+grid on;
+ylim([1e-7 250])
+y_limits = ylim;
+
+% Plot the shaded region first so it stays in the background
+fill([1e-1 x_piv x_piv 1e-1], [y_limits(1) y_limits(1) y_limits(2) y_limits(2)], ...
+    [0.7 1 0.7], 'EdgeColor', 'none', 'FaceAlpha', 0.3);
+
+% Redraw plots to keep them above the fill, using the same colors as before
+loglog(AoA0.f, AoA0.pxx, '-', 'Color', h1.Color, 'DisplayName', 'AoA 0°', 'LineWidth', 1.5); 
+loglog(AoA5.f, AoA5.pxx, '-', 'Color', h2.Color, 'DisplayName', 'AoA 5°', 'LineWidth', 1.5);  
+loglog(AoA15.f, AoA15.pxx, '-', 'Color', h3.Color, 'DisplayName', 'AoA 15°', 'LineWidth', 1.5); 
+
+% Add vertical dashed line at x_piv
+xline(x_piv, '--', 'LineWidth', 1);
+
+% Annotate the vertical line
+text(x_piv * 0.6, y_limits(1) * 2, 'PIV resolution', 'Rotation', 0, ...
+    'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', 'FontSize', 10);
+
 xlabel('Frequency (Hz)');
 ylabel('Power Spectral Density (m^2/s^2/Hz)');
-legend('Location', 'best');
-grid on;
+legend({'AoA 0°', 'AoA 5°', 'AoA 15°'}, 'Location', 'best');
+
 
 
 function [AoA0, AoA5, AoA15] = load_HWA()  
@@ -99,7 +125,7 @@ function [AoA0, AoA5, AoA15] = load_HWA()
                 Vmean_AoA15(end+1) = Mean;
                 Vrms_AoA15(end+1) = Rms;
 
-                if y_location == -32
+                if y_location == -24
                     [pxxAoA15, fAoA15] = pwelch(velocity, [], [], [], 1/(data(2,1)-data(1,1)));
                 end
             end
@@ -126,8 +152,8 @@ function [AoA0, AoA5, AoA15] = load_HWA()
     AoA0.y_locations = y_locations_AoA0;
     AoA0.Vmean = Vmean_AoA0;
     AoA0.Vrms = Vrms_AoA0;
-    AoA.pxx = pxxAoA0;
-    AoA.f = fAoA0;
+    AoA0.pxx = pxxAoA0;
+    AoA0.f = fAoA0;
 
     AoA5.y_locations = y_locations_AoA5;
     AoA5.Vmean = Vmean_AoA5;
