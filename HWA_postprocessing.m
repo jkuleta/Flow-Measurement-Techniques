@@ -1,16 +1,29 @@
 clear; close all; clc;
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% VERIFY LOCATIONS FOR SPECTRAL PLOTS, THERE MIGHT BE A MISTAKE IN DECIDING 
+% WHICH PROBE LOCATION WE SHOULD CONSIDER
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 [AoA0, AoA5, AoA15] = load_HWA();
+
+load('Group17_PressureProbe.mat');
 
 figure;
 subplot(1,2,1);
-plot(AoA0.y_locations, AoA0.Vmean, 'x-', 'DisplayName', 'AoA 0°', 'LineWidth', 1.5);
+plot(AoA0.y_locations, AoA0.Vmean, 'x-', 'DisplayName', 'HWA: AoA 0°', 'LineWidth', 1.5);
 hold on;
-plot(AoA5.y_locations, AoA5.Vmean, 'x-', 'DisplayName', 'AoA 5°', 'LineWidth', 1.5);
-plot(AoA15.y_locations, AoA15.Vmean, 'x-', 'DisplayName', 'AoA 15°', 'LineWidth', 1.5);
+plot(PPAoA5.y_locations_mean, PPAoA5.V_mean, 'x--', 'DisplayName', 'PP: AoA 5°', 'LineWidth', 1.5);
+plot(AoA5.y_locations, AoA5.Vmean, 'x-', 'DisplayName', 'HWA: AoA 5°', 'LineWidth', 1.5);
+plot(AoA15.y_locations, AoA15.Vmean, 'x-', 'DisplayName', 'HWA: AoA 15°', 'LineWidth', 1.5);
+plot(PPAoA15.y_locations_mean, PPAoA15.V_mean, 'x--', 'DisplayName', 'PP: AoA 15°', 'LineWidth', 1.5);
 xlabel('y location (m)');
 ylabel('Mean Velocity (m/s)');
 legend('Location', 'best');
+xlim([min(AoA0.y_locations) max(AoA15.y_locations)]);
 grid on;
 
 subplot(1,2,2);
