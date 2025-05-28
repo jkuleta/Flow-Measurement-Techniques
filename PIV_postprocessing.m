@@ -1,5 +1,5 @@
 
-function [x,y,Vx,Vy] = PIV_postprocessing(window_size, overlap, alpha, type, multipass, dt6, measurements)
+function [Xgrid, Ygrid, Vx_grid, Vy_grid,Vmag_grid] = PIV_postprocessing(window_size, overlap, alpha, type, multipass, dt6, measurements, plot)
     % PIV_postprocessing.m
     % This function processes PIV data based on the specified parameters.
     % Parameters:
@@ -26,7 +26,7 @@ function [x,y,Vx,Vy] = PIV_postprocessing(window_size, overlap, alpha, type, mul
     if alpha==0 && overlap == 50
         foldername_mid = '_SubOverTimeMin_sL=all_SubOverTimeMin_sL=all_';
     end
-    if dt6 && overlap == 0
+    if (dt6 && overlap == 0) || (alpha == 5 && overlap == 0)
         foldername_mid = '_SubLocalMinOfSeriesSubLocalMin_';
     end
     if multipass
@@ -53,14 +53,18 @@ function [x,y,Vx,Vy] = PIV_postprocessing(window_size, overlap, alpha, type, mul
 
     if strcmp(type, 'live') 
         foldername_type = '';
-    elseif (strcmp(type, 'Avg') || strcmp(type, 'Stdev')) && (alpha ~= 5 && overlap ~= 0) && (alpha ~= 15 && overlap ~= 0)
+    elseif (strcmp(type, 'Avg') || strcmp(type, 'Stdev')) && (alpha ~= 5 || overlap ~= 0) && (alpha ~= 15 || overlap ~= 0)
         foldername_type = '_Avg_Stdev';
     elseif (strcmp(type, 'Avg') || strcmp(type, 'Stdev')) && ((alpha == 5 && overlap == 0) || (alpha == 15 && overlap == 0))
         foldername_type = '_TimeMeanQF_Vector'; 
     end
     full_foldername = [foldername_prefix, foldername_middle,foldername_window, foldername_type, foldername_postfix];
-
-    filename = fullfile('Group17pivpostprocessing\Group17\',full_foldername, 'B00001.dat');
+    if strcmp(type, 'live') || strcmp(type, 'Avg')
+        filenumber = 'B00001.dat';
+    else
+        filenumber = 'B00002.dat';
+    end
+    filename = fullfile('Group17pivpostprocessing\Group17\',full_foldername, filenumber);
     fid = fopen(filename, 'r');
     if fid == -1
         error(['Cannot open file: ' filename]);
@@ -77,6 +81,13 @@ function [x,y,Vx,Vy] = PIV_postprocessing(window_size, overlap, alpha, type, mul
     y = data(:,2);
     Vx = data(:,3);
     Vy = data(:,4);
+    isValid = data(:,5);
+    % Filter out invalid data
+    % validIndices = isValid > 0;
+    % x = x(validIndices);
+    % y = y(validIndices);
+    % Vx = Vx(validIndices);
+    % Vy = Vy(validIndices);
     disp(size(x));
     % Read or process the file as needed
     % fclose(fid); % Close when done
@@ -85,14 +96,37 @@ function [x,y,Vx,Vy] = PIV_postprocessing(window_size, overlap, alpha, type, mul
     Vmag = sqrt(Vx.^2 + Vy.^2);
 
     % Create scatter plot with colormap
+    if plot
+        figure;
+        scatter(x, y, 40, Vmag, 'filled');
+        colorbar;
+        colormap(jet);
+        xlabel('x');
+        ylabel('y');
+        title('Velocity Magnitude Map');
+        axis equal tight;
+    end
+    % Grid the data
+    xvals = unique(x);
+    yvals = unique(y);
+    [Xgrid, Ygrid] = meshgrid(xvals, yvals);
+
+    % Interpolate Vx, Vy, and Vmag to the grid
+    Vx_grid = griddata(x, y, Vx, Xgrid, Ygrid);
+    Vy_grid = griddata(x, y, Vy, Xgrid, Ygrid);
+    Vmag_grid = sqrt(Vx_grid.^2 + Vy_grid.^2);
+
+    % Plot
     figure;
-    scatter(x, y, 40, Vmag, 'filled');
+    contourf(Xgrid, Ygrid, Vmag_grid, 20, 'LineColor', 'none');
     colorbar;
-    colormap(jet);
+    hold on;
+    quiver(Xgrid, Ygrid, Vx_grid, Vy_grid, 'k');
     xlabel('x');
     ylabel('y');
-    title('Velocity Magnitude Map');
+    title('Velocity Magnitude Contour with Velocity Vectors');
     axis equal tight;
+    hold off;
 end
 
 % % Example usage:
