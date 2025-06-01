@@ -1,4 +1,6 @@
-type = 'Avg';
+clear all; close all; clc;
+
+type = 'live'; % Options: 'live', 'Avg', 'Stdev'
 windowsize = 32;
 overlap = 50;
 alpha = 0;
@@ -19,3 +21,17 @@ xlabel('Velocity Magnitude');
 ylabel('Y Position');
 title('Velocity Profile at Selected X Position');
 grid on;
+
+% Find indices where Xgrid is between -20 and 120
+x_range_indices = find(Xgrid(1,:) >= -20 & Xgrid(1,:) <= 120);
+
+% Restrict Vmag_grid to these columns
+Vmag_sub = Vmag_grid(:, x_range_indices);
+
+% Find max in the restricted region
+[max_val, linear_index] = max(Vmag_sub(:));
+[y_max, x_sub_max] = ind2sub(size(Vmag_sub), linear_index);
+x_max = x_range_indices(x_sub_max);
+
+disp(['Maximum velocity is ', num2str(max_val), ...
+    ' at (x, y) = (', num2str(Xgrid(1, x_max)), ', ', num2str(Ygrid(y_max, x_max)), ')']);
