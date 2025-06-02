@@ -8,37 +8,58 @@ clear; close all; clc;
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[AoA0, AoA5, AoA15] = load_HWA();
+[AoA0, AoA5, AoA15, calibration] = load_HWA();
+
 
 load('Group17_PressureProbe.mat');
 
+set(groot, 'defaultAxesFontSize', 12);
+set(groot, 'defaultTextFontSize', 12);
+
 figure;
+scatter(calibration.voltage, calibration.velocity, 80, 's', 'filled', 'k', 'DisplayName', 'Measurement data'); hold on;
+plot(linspace(min(calibration.voltage), max(calibration.voltage), 100), calibration.polynomial(linspace(min(calibration.voltage), max(calibration.voltage), 100)), 'k--', 'DisplayName', 'Polynomial fit', 'LineWidth', 1.5);
+% Display the polynomial equation on the plot
+eq_str = sprintf(['$U = %.3g V^4 %+.3g V^3 %+.3g V^2$\n' ...
+                  '$\\quad %+.3g V %+.3g$'], calibration.coeffs);
+text(-3, 17, eq_str, ...
+    'Interpreter', 'latex', 'FontSize', 14, 'VerticalAlignment', 'top');
+grid on;
+xlabel('Voltage $V$ [V]', 'Interpreter', 'latex');
+ylabel('Velocity $U$[m/s]', 'Interpreter', 'latex');
+legend('Location', 'best');
+
+
+figure;
+
+% Subplot 1: Mean velocity
 subplot(1,2,1);
-plot(AoA0.y_locations, AoA0.Vmean, 'x-', 'DisplayName', 'HWA: AoA 0°', 'LineWidth', 1.5);
+plot(AoA0.Vmean, AoA0.y_locations, 'x-',  'LineWidth', 1.5);
 hold on;
-plot(PPAoA5.y_locations_mean, PPAoA5.V_mean, 'x--', 'DisplayName', 'PP: AoA 5°', 'LineWidth', 1.5);
-plot(AoA5.y_locations, AoA5.Vmean, 'x-', 'DisplayName', 'HWA: AoA 5°', 'LineWidth', 1.5);
-plot(AoA15.y_locations, AoA15.Vmean, 'x-', 'DisplayName', 'HWA: AoA 15°', 'LineWidth', 1.5);
-plot(PPAoA15.y_locations_mean, PPAoA15.V_mean, 'x--', 'DisplayName', 'PP: AoA 15°', 'LineWidth', 1.5);
-xlabel('y location (m)');
-ylabel('Mean Velocity (m/s)');
-legend('Location', 'best');
-xlim([min(AoA0.y_locations) max(AoA15.y_locations)]);
+plot(AoA5.Vmean, AoA5.y_locations, 'x-', 'LineWidth', 1.5);
+plot(AoA15.Vmean, AoA15.y_locations,  'x-', 'LineWidth', 1.5);
+ylabel('$y$ [m]', 'Interpreter', 'latex');
+xlabel('Mean velocity $\bar{U}$ [m/s]', 'Interpreter', 'latex');
+legend({'$\alpha = 0^\circ$', '$\alpha = 5^\circ$', '$\alpha = 15^\circ$'}, ...
+       'Interpreter', 'latex', 'Location', 'best');
+ylim([min(AoA0.y_locations) max(AoA15.y_locations)]);
 grid on;
 
+% Subplot 2: RMS of fluctuations
 subplot(1,2,2);
-plot(AoA0.y_locations, AoA0.Vrms, 'x-', 'DisplayName', 'AoA 0°', 'LineWidth', 1.5);
+plot(AoA0.Vrms, AoA0.y_locations, 'x-', 'LineWidth', 1.5);
 hold on;
-plot(AoA5.y_locations, AoA5.Vrms, 'x-', 'DisplayName', 'AoA 5°','LineWidth', 1.5);   
-plot(AoA15.y_locations, AoA15.Vrms, 'x-', 'DisplayName', 'AoA 15°', 'LineWidth', 1.5);
+plot(AoA5.Vrms, AoA5.y_locations,  'x-', 'LineWidth', 1.5);   
+plot(AoA15.Vrms, AoA15.y_locations, 'x-', 'LineWidth', 1.5);
+xlabel("Fluctuation RMS $\sqrt{u'}$ [m/s]", 'Interpreter', 'latex');
+ylabel('$y$ [m]', 'Interpreter', 'latex');
+legend({'$\alpha = 0^\circ$', '$\alpha = 5^\circ$', '$\alpha = 15^\circ$'}, ...
+       'Interpreter', 'latex', 'Location', 'best');
 grid on;
-legend('Location', 'best');
-ylabel('RMS Velocity (m/s)');
-xlabel('y location (m)');
 
 
 figure;
-x_piv = 8;
+x_piv = 4;
 
 % Plot once to get y-limits for shading, store plot handles for legend colors
 h1 = loglog(AoA0.f, AoA0.pxx, '-', 'LineWidth', 1.5); 
@@ -65,7 +86,7 @@ xline(x_piv, '--', 'LineWidth', 1);
 
 % Annotate the vertical line
 text(x_piv * 0.6, y_limits(1) * 2, 'PIV resolution', 'Rotation', 0, ...
-    'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', 'FontSize', 10);
+    'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', 'FontSize', 14);
 
 xlabel('Frequency (Hz)');
 ylabel('Power Spectral Density (m^2/s^2/Hz)');
@@ -73,7 +94,7 @@ legend({'AoA 0°', 'AoA 5°', 'AoA 15°'}, 'Location', 'best');
 
 
 
-function [AoA0, AoA5, AoA15] = load_HWA()  
+function [AoA0, AoA5, AoA15, calibration] = load_HWA()  
     folder_path = 'Group17_HWA';
     files = dir(fullfile(folder_path, '*.txt'));
 
@@ -107,6 +128,11 @@ function [AoA0, AoA5, AoA15] = load_HWA()
             % Fit a 4th order polynomial: velocity = f(voltage)
             coeffs = polyfit(voltage, velocity, 4);
             polynomial = @(v) polyval(coeffs, v);
+
+            calibration.polynomial = polynomial; % Store the polynomial function for later use
+            calibration.coeffs = coeffs; % Store the coefficients for reference
+            calibration.voltage = voltage; % Store the voltage data
+            calibration.velocity = velocity; % Store the velocity data
 
         elseif numel(name_parts) == 3
             y_location = str2double(name_parts{2});

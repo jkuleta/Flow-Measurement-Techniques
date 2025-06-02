@@ -3,63 +3,69 @@ clear; close all; clc;
 
 save('Group17_PressureProbe.mat', 'PPAoA5', 'PPAoA15');
 
+clim = [min(PPAoA5.V), max(PPAoA5.V)];
+
+% First subplot: Measured Field
 figure;
 scatter(PPAoA5.x_locations, PPAoA5.y_locations, 60, PPAoA5.V, 'filled');
 colormap('turbo');
 colorbar;
-xlabel('x location (mm)');
-ylabel('y location (mm)');
-title('Velocity Magnitude at PPAoA5');
+xlabel('x [mm]');
+ylabel('y [mm]');
 axis equal tight;
+caxis(clim);
 
+% Interpolation grid
+xq_PPAoA5 = linspace(min(PPAoA5.x_locations), max(PPAoA5.x_locations), 200);
+yq_PPAoA5 = linspace(min(PPAoA5.y_locations), max(PPAoA5.y_locations), 200);
+[Xq_PPAoA5, Yq_PPAoA5] = meshgrid(xq_PPAoA5, yq_PPAoA5);
+
+% Interpolate
+Vq_PPAoA5 = griddata(PPAoA5.x_locations, PPAoA5.y_locations, PPAoA5.V, Xq_PPAoA5, Yq_PPAoA5, 'natural');
+
+% Second subplot: Interpolated Field
+figure;
+contourf(Xq_PPAoA5, Yq_PPAoA5, Vq_PPAoA5, 50, 'LineColor', 'none');
+colormap('turbo');
+colorbar;
+xlabel('x [mm]');
+ylabel('y [mm]');
+axis equal tight;
+caxis(clim);
+
+
+clim = [min(PPAoA15.V), max(PPAoA15.V)];
+
+% First subplot: Measured Field
 figure;
 scatter(PPAoA15.x_locations, PPAoA15.y_locations, 60, PPAoA15.V, 'filled');
 colormap('turbo');
 colorbar;
-xlabel('x location (mm)');
-ylabel('y location (mm)');
-title('Velocity Magnitude at PPAoA15');
+xlabel('x [mm]');
+ylabel('y [mm]');
 axis equal tight;
+caxis(clim);
 
-% Define grid for interpolation for PPAoA15
+% Interpolation grid
 xq_PPAoA15 = linspace(min(PPAoA15.x_locations), max(PPAoA15.x_locations), 200);
 yq_PPAoA15 = linspace(min(PPAoA15.y_locations), max(PPAoA15.y_locations), 200);
 [Xq_PPAoA15, Yq_PPAoA15] = meshgrid(xq_PPAoA15, yq_PPAoA15);
 
-% Interpolate the scattered data onto the grid
+% Interpolate
 Vq_PPAoA15 = griddata(PPAoA15.x_locations, PPAoA15.y_locations, PPAoA15.V, Xq_PPAoA15, Yq_PPAoA15, 'natural');
 
-% Plot the smoothed heat map with a differentiating colormap
+% Second subplot: Interpolated Field
 figure;
-contourf(Xq_PPAoA15, Yq_PPAoA15, Vq_PPAoA15, 50, 'LineColor', 'none');  % 50 contour levels
-colormap('turbo'); % Use 'parula' for a more differentiating color scheme
+contourf(Xq_PPAoA15, Yq_PPAoA15, Vq_PPAoA15, 50, 'LineColor', 'none');
+colormap('turbo');
 colorbar;
-xlabel('x');
-ylabel('y');
-title('Smoothed Velocity Magnitude Heat Map (PPAoA15)');
+xlabel('x [mm]');
+ylabel('y [mm]');
 axis equal tight;
+caxis(clim);
 
-% Store color limits for consistency
-%clims = caxis;
 
-% Define grid for interpolation for PPAoA5
-xq_PPAoA5 = linspace(min(PPAoA5.x_locations), max(PPAoA5.x_locations), 200);
-yq_PPAoA5= linspace(min(PPAoA5.y_locations), max(PPAoA5.y_locations), 200);
-[Xq_PPAoA5, Yq_PPAoA5] = meshgrid(xq_PPAoA5, yq_PPAoA5);
 
-% Interpolate the scattered data onto the grid
-Vq_PPAoA5 = griddata(PPAoA5.x_locations, PPAoA5.y_locations, PPAoA5.V, Xq_PPAoA5, Yq_PPAoA5, 'natural');
-
-% Plot the smoothed heat map using the same colormap and color scale
-figure;
-contourf(Xq_PPAoA5, Yq_PPAoA5, Vq_PPAoA5, 50, 'LineColor', 'none');  % 50 contour levels
-colormap('turbo'); % Use the same colormap as the first figure
-colorbar;
-caxis;%(clims);      % Use the same color scale as the first figure
-xlabel('x');
-ylabel('y');
-title('Smoothed Velocity Magnitude Heat Map (PPAoA5)');
-axis equal tight;
 
 figure;
 plot(PPAoA5.y_locations_mean, PPAoA5.V_mean, 'x-', 'DisplayName', 'AoA 5°', 'LineWidth', 1.5);
@@ -95,10 +101,14 @@ function [PPAoA5, PPAoA15] = load_Pressure()
             PPAoA5.V = V;
             PPAoA5.x_locations = x_locations;
             PPAoA5.y_locations = y_locations;
+            PPAoA5.u = u;
+            PPAoA5.v = v;
         elseif strcmp(filename, '15.txt')
             PPAoA15.V = V;
             PPAoA15.x_locations = x_locations;
             PPAoA15.y_locations = y_locations;
+            PPAoA15.u = u;
+            PPAoA15.v = v;
         end
     end
     % Extract velocity magnitude at an x location of interest
