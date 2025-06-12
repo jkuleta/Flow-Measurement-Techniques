@@ -8,13 +8,34 @@ clear; close all; clc;
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[AoA0, AoA5, AoA15, calibration] = load_HWA();
+[AoA0, AoA5, AoA15, calibration, correlation] = load_HWA();
 
 
 load('Group17_PressureProbe.mat');
 
 set(groot, 'defaultAxesFontSize', 12);
 set(groot, 'defaultTextFontSize', 12);
+
+figure;
+plot(correlation.time, correlation.velocity, 'LineWidth', 1.5);
+title('Velocity');
+
+% Sampling time and autocorrelation
+% Correlation coefficient
+sigma2 = var(correlation.velocity);
+n = 1; R_E(n) = mean(correlation.velocity.^2)/sigma2;
+while R_E(n) > 0
+    n= n+1;
+    R_E(n) = mean(correlation.velocity(1:end-n+1).*correlation.velocity(n:end))/sigma2;
+end
+R_E = R_E/R_E(1); % Normalize the correlation coefficient 
+
+figure;
+plot(correlation.time(1:n-1), R_E(1:n-1));
+title('Autocorrelation');
+
+T_I = trapz(correlation.time(1:n-1), R_E(1:n-1));
+fprintf('Intergral time scale T_I = %f', T_I);
 
 figure;
 scatter(calibration.voltage, calibration.velocity, 80, 's', 'filled', 'k', 'DisplayName', 'Measurement data'); hold on;
@@ -59,7 +80,7 @@ grid on;
 
 
 figure;
-x_piv = 4;
+x_piv = 4.15;
 
 % Plot once to get y-limits for shading, store plot handles for legend colors
 h1 = loglog(AoA0.f, AoA0.pxx, '-', 'LineWidth', 1.5); 
@@ -94,7 +115,7 @@ legend({'AoA 0°', 'AoA 5°', 'AoA 15°'}, 'Location', 'best');
 
 
 
-function [AoA0, AoA5, AoA15, calibration] = load_HWA()  
+function [AoA0, AoA5, AoA15, calibration, correlation] = load_HWA()  
     folder_path = 'Group17_HWA';
     files = dir(fullfile(folder_path, '*.txt'));
 
@@ -168,6 +189,13 @@ function [AoA0, AoA5, AoA15, calibration] = load_HWA()
                     [pxxAoA15, fAoA15] = pwelch(velocity, [], [], [], 1/(data(2,1)-data(1,1)));
                 end
             end
+        elseif strcmp(name_parts{1}, 'correlation') && numel(name_parts) == 2
+            time = data(:, 1);
+            voltage = data(:, 2);
+            velocity = polynomial(voltage);
+
+            correlation.time = time;
+            correlation.velocity = velocity;
         end
     end
 
