@@ -1,12 +1,12 @@
 clear all; close all; clc;
 
-type = 'live'; % Options: 'live', 'Avg', 'Stdev'
-windowsize = 32;
-overlap = 50;
+type = 'Stdev'; % Options: 'live', 'Avg', 'Stdev'
+windowsize = 16;
+overlap = 0;
 alpha = 0;
 multipass = false;
-dt6 = false;
-measurements = 100;
+dt6 = false; %only available for alpha = 15
+measurements = 100; %can only be set to 10 for alpha =15
 plotinfunction = false;
 
 [Xgrid, Ygrid, Vx_grid, Vy_grid,Vmag_grid]=PIV_postprocessing(windowsize,overlap,alpha,type,multipass,dt6,measurements, plotinfunction);
