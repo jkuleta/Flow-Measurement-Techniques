@@ -22,11 +22,12 @@ title('Velocity');
 
 % Sampling time and autocorrelation
 % Correlation coefficient
-sigma2 = var(correlation.velocity);
-n = 1; R_E(n) = mean(correlation.velocity.^2)/sigma2;
-while R_E(n) > 0
+n = 1; R_E(n) = 1/correlation.time(end) *trapz(correlation.time, correlation.velocity.^2);
+while n < length(correlation.time)-1
     n= n+1;
-    R_E(n) = mean(correlation.velocity(1:end-n+1).*correlation.velocity(n:end))/sigma2;
+    length(correlation.time) - n + 1-1;
+    length(correlation.velocity) - n;
+    R_E(n) = 1/correlation.time(end) * trapz(correlation.time(n:end), correlation.velocity(1:end-n+1).*correlation.velocity(n:end));
 end
 R_E = R_E/R_E(1); % Normalize the correlation coefficient 
 
