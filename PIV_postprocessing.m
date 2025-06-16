@@ -115,16 +115,22 @@ function [Xgrid, Ygrid, Vx_grid, Vy_grid,Vmag_grid] = PIV_postprocessing(window_
     Vx_grid = griddata(x, y, Vx, Xgrid, Ygrid);
     Vy_grid = griddata(x, y, Vy, Xgrid, Ygrid);
     Vmag_grid = sqrt(Vx_grid.^2 + Vy_grid.^2);
-
+    step = 4; % Change to 3, 4, etc. for fewer arrows
+    Xq = Xgrid(1:step:end, 1:step:end);
+    Yq = Ygrid(1:step:end, 1:step:end);
+    Vxq = Vx_grid(1:step:end, 1:step:end);
+    Vyq = Vy_grid(1:step:end, 1:step:end);
     % Plot
     figure;
     contourf(Xgrid, Ygrid, Vmag_grid, 20, 'LineColor', 'none');
     colorbar;
     hold on;
-    quiver(Xgrid, Ygrid, Vx_grid, Vy_grid, 'k');
-    xlabel('x');
-    ylabel('y');
-    title('Velocity Magnitude Contour with Velocity Vectors');
+    if strcmp(type, 'live') || strcmp(type, 'Avg')
+        quiver(Xq, Yq, Vxq, Vyq, 1.5, 'k', 'LineWidth', 1);
+    end
+    xlabel('x [mm]');
+    ylabel('y [mm]');
+    % title('Velocity Magnitude Contour with Velocity Vectors');
     axis equal tight;
     hold off;
 end
