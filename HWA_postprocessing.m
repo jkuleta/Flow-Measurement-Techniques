@@ -20,23 +20,39 @@ figure;
 plot(correlation.time, correlation.velocity, 'LineWidth', 1.5);
 title('Velocity');
 
-% Sampling time and autocorrelation
-% Correlation coefficient
-n = 1; R_E(n) = 1/correlation.time(end) *trapz(correlation.time, correlation.velocity.^2);
-while n < length(correlation.time)-1
-    n= n+1;
-    length(correlation.time) - n + 1-1;
-    length(correlation.velocity) - n;
-    R_E(n) = 1/correlation.time(end) * trapz(correlation.time(n:end), correlation.velocity(1:end-n+1).*correlation.velocity(n:end));
+u = correlation.velocity - mean(correlation.velocity);  
+t = correlation.time;% Extract velocity data
+% Compute / plot correlation coefficient
+n = 1;
+sigma2 = var(u);  % Variance of velocity fluctuations
+R_E(n) = mean(u.^2) / sigma2;  % Initialize
+
+
+while R_E(n) > 0  % Compute while positive
+    n = n + 1;  % Update counter
+    R_E(n) = mean(u(1:end-n+1) .* u(n:end)) / sigma2;
 end
-R_E = R_E/R_E(1); % Normalize the correlation coefficient 
+
+% Calculate macro time scale & compare with target
+T_E = trapz(t(1:n), R_E);  % Compute macro time scale (s)
+
 
 figure;
 plot(correlation.time(1:n-1), R_E(1:n-1));
 title('Autocorrelation');
+fprintf('Intergral time scale T_I = %f\n', T_E);
 
-T_I = trapz(correlation.time(1:n-1), R_E(1:n-1));
-fprintf('Intergral time scale T_I = %f', T_I);
+epsilon = 1-0.997;
+k = 3;
+U = mean(correlation.velocity);
+RMS = std(correlation.velocity);
+
+N = (k * RMS /(epsilon*U))^2;  % Number of samples needed for convergence
+
+fprintf('Number of samples needed for convergence N = %d\n', N);
+
+T = 2*N*T_E;  % Total time needed for convergence
+fprintf('Total time needed for convergence T = %f s\n', T);
 
 figure;
 scatter(calibration.voltage, calibration.velocity, 80, 's', 'filled', 'k', 'DisplayName', 'Measurement data'); hold on;
