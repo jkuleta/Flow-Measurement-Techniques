@@ -38,9 +38,13 @@ T_E = trapz(t(1:n), R_E);  % Compute macro time scale (s)
 
 
 figure;
-plot(correlation.time(1:n-1), R_E(1:n-1));
-title('Autocorrelation');
-fprintf('Intergral time scale T_I = %f\n', T_E);
+plot(correlation.time(1:n-1), R_E(1:n-1), 'LineWidth', 1.5);
+xlabel('$\tau$ [s]', 'Interpreter', 'latex');
+ylabel('$R_E(\tau)$', 'Interpreter', 'latex');
+grid on;
+
+
+fprintf('Integral time scale T_I = %f\n', T_E);
 
 epsilon = 1-0.997;
 k = 3;
