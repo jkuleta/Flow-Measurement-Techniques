@@ -23,10 +23,10 @@ alpha = 0;
 [x_index0, velocity_profile0] = PIV_vel_profile_u(Xgrid0, Ygrid0, Vx_grid0, Vy_grid0,Vmag_grid0, PIV_xposition);
 
 figure;
-plot(velocity_profile0, flipud(Ygrid0(:, x_index0)), 'x-','LineWidth', 1.5);
+plot(flipud(velocity_profile0), (Ygrid0(:, x_index0)-52), 'x-','LineWidth', 1.5);
 hold on;
-plot(velocity_profile5, flipud(Ygrid5(:, x_index5)), 'x-','LineWidth', 1.5);
-plot(velocity_profile15, flipud(Ygrid15(:, x_index15)), 'x-','LineWidth', 1.5);
+plot(flipud(velocity_profile5), (Ygrid5(:, x_index5)-52), 'x-','LineWidth', 1.5);
+plot(flipud(velocity_profile15), (Ygrid15(:, x_index15)-52), 'x-','LineWidth', 1.5);
 plot(AoA0.Vmean, AoA0.y_locations, 'x-',  'LineWidth', 1.5);
 plot(AoA5.Vmean, AoA5.y_locations, 'x-',  'LineWidth', 1.5);
 plot(AoA15.Vmean, AoA15.y_locations, 'x-',  'LineWidth', 1.5);
