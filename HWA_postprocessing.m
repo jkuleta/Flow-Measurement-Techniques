@@ -130,9 +130,8 @@ xline(x_piv, '--', 'LineWidth', 1);
 text(x_piv * 0.6, y_limits(1) * 2, 'PIV resolution', 'Rotation', 0, ...
     'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', 'FontSize', 14);
 
-xlabel('Frequency (Hz)');
-ylabel('Power Spectral Density (m^2/s^2/Hz)');
-legend({'AoA 0°', 'AoA 5°', 'AoA 15°'}, 'Location', 'best');
-
-
+xlabel('Frequency [Hz]', 'Interpreter', 'latex');
+ylabel('Power Spectral Density [$m^2/s^2/Hz$]', 'Interpreter', 'latex');
+legend({'$\alpha = 0^\circ$', '$\alpha = 5^\circ$', '$\alpha = 15^\circ$'}, ...
+    'Interpreter', 'latex', 'Location', 'best');
 
